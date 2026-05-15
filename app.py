@@ -1,8 +1,3 @@
-"""
-TS EAMCET / TG EAPCET Opening & Closing Ranks Portal
-UI: JoSAA-style — simple dropdowns, one Submit button, results table.
-Target users: uneducated parents. No clutter. No modes. No extras.
-"""
 
 import streamlit as st
 import pandas as pd
@@ -296,7 +291,7 @@ def render_results(rows: list[dict]) -> None:
 # ── Header ────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="portal-header">
-  <h1>🎓 TS EAMCET / TG EAPCET — Opening &amp; Closing Ranks</h1>
+  <h1>🎓 TS EAMCET / TG EAPCET — Closing Ranks</h1>
   <p>Telangana Engineering Admissions · All Colleges · All Categories</p>
 </div>
 """, unsafe_allow_html=True)
