@@ -404,7 +404,7 @@ st.markdown("""
 # ── Footer ────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="portal-footer">
-  TS EAMCET / TG EAPCET Opening &amp; Closing Ranks Portal &nbsp;·&nbsp;
+  TS EAMCET / TG EAPCET Closing Ranks Portal &nbsp;·&nbsp;
   Data sourced from TSCHE official publications
 </div>
 """, unsafe_allow_html=True)
