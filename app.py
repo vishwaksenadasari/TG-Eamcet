@@ -305,7 +305,7 @@ if not catalog:
 
 years  = sorted(catalog.keys(), reverse=True)
 # ── Form ──────────────────────────────────────────────────────────────────
-st.markdown('<div class="form-box"><div class="form-title">Opening and Closing Ranks</div>', unsafe_allow_html=True)
+st.markdown('<div class="form-box"><div class="form-title">Closing Ranks</div>', unsafe_allow_html=True)
 
 year = st.selectbox("Year", years)
 
