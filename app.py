@@ -2,6 +2,13 @@
 import streamlit as st
 import pandas as pd
 import os, re
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib import colors
+from io import BytesIO
+
 
 # ── Page config ───────────────────────────────────────────────────────────
 st.set_page_config(
@@ -385,11 +392,76 @@ if submitted:
             # Download
             dl_df = pd.DataFrame(results)
             dl_df.columns = ["College Name", "Branch Name", "Closing Rank"]
+
+            # Function to convert DataFrame to PDF
+            def df_to_pdf(df, title="TS EAMCET / TG EAPCET Closing Ranks"):
+                buffer = BytesIO()
+                doc = SimpleDocTemplate(
+                    buffer,
+                    pagesize=landscape(A4),
+                    leftMargin=15 * mm,
+                    rightMargin=15 * mm,
+                    topMargin=15 * mm,
+                    bottomMargin=15 * mm,
+                )
+
+                # Styles for wrapped text inside cells
+                header_style = ParagraphStyle(
+                    "header", fontName="Helvetica-Bold", fontSize=9,
+                    textColor=colors.whitesmoke, leading=11,
+                )
+                cell_style = ParagraphStyle(
+                    "cell", fontName="Helvetica", fontSize=8.5, leading=10,
+                )
+                rank_style = ParagraphStyle(
+                    "rank", fontName="Helvetica-Bold", fontSize=8.5,
+                    leading=10, textColor=colors.HexColor("#1a3c6e"),
+                )
+
+                # Build table data with Paragraphs so long text wraps instead of overflowing
+                header_row = [Paragraph(str(c), header_style) for c in df.columns]
+                data = [header_row]
+                for _, row in df.iterrows():
+                    data.append([
+                        Paragraph(str(row["College Name"]), cell_style),
+                        Paragraph(str(row["Branch Name"]), cell_style),
+                        Paragraph(f'{int(row["Closing Rank"]):,}', rank_style),
+                    ])
+
+                # Column widths sized for landscape A4 (~257mm usable width)
+                page_width = landscape(A4)[0] - 30 * mm
+                col_widths = [page_width * 0.45, page_width * 0.40, page_width * 0.15]
+
+                table = Table(data, colWidths=col_widths, repeatRows=1)  # repeat header on new pages
+
+                style = TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a3c6e")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (2, 0), (2, -1), "RIGHT"),       # right-align rank column
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 8.5),
+                    ("TOPPADDING", (0, 0), (-1, -1), 6),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cccccc")),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f2f6fb")]),
+                ])
+                table.setStyle(style)
+
+                doc.build([table])
+                buffer.seek(0)
+                return buffer
+
+            # Generate PDF
+            pdf_buffer = df_to_pdf(dl_df)
+
+            # Streamlit download button
             st.download_button(
-                "⬇️  Download Results (CSV)",
-                data=dl_df.to_csv(index=False),
-                file_name=f"TSEAMCET_{year}_{phase}_{cat_sel}_{gender_sel}.csv",
-                mime="text/csv",
+                "⬇️ Download Results (PDF)",
+                data=pdf_buffer,
+                file_name=f"TSEAMCET_{year}_{phase}_{cat_sel}_{gender_sel}.pdf",
+                mime="application/pdf",
             )
 
 # ── Note ──────────────────────────────────────────────────────────────────
